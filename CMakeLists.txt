@@ -43,8 +43,6 @@ set(SOURCE_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp
 )
 
-set(JSON_FILE ${CMAKE_BINARY_DIR}/results.json)
-
 include_directories(${benchmark_SOURCE_DIR}/include)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src)
 include_directories(${fmt_SOURCE_DIR}/include})
@@ -54,12 +52,22 @@ target_link_libraries(sample_app fmt)
 
 add_executable(func_bench ${CMAKE_CURRENT_SOURCE_DIR}/src/bm/func_bench.cpp)
 target_link_libraries(func_bench benchmark fmt)
+
+message(STATUS "BM_LIST: ${BM_LIST}")
+foreach(BM_NAME ${BM_LIST})
+  message(STATUS "BM_NAME: ${BM_NAME}")
+  if (NOT EXISTS "${CMAKE_BINARY_DIR}/${BM_NAME}.txt")
+    message(WARNING "${BM_NAME}.txt does not exist. You should generate it.")
+  endif()
+endforeach()
+
 add_custom_target(run_func_bench 
-  COMMAND func_bench ${BM_LIST} --benchmark_format=json > ${JSON_FILE}
+  COMMAND func_bench foo --benchmark_format=json > ${JSON_FILE}
   DEPENDS func_bench
   WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
 )
 
 add_custom_target(plot_func_bench
-  COMMAND "python3 ${CMAKE_CURRENT_SOURCE_DIR}/visualize.py ${JSON_FILE}"
+  COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/visualize.py results.json
+  WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
 )
