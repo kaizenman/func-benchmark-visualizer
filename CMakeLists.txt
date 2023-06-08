@@ -61,12 +61,6 @@ foreach(BM_NAME ${BM_LIST})
   endif()
 endforeach()
 
-add_custom_target(run_func_bench 
-  COMMAND func_bench foo --benchmark_format=json > ${JSON_FILE}
-  DEPENDS func_bench
-  WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-)
-
 add_custom_target(plot_func_bench
   COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/visualize.py results.json
   WORKING_DIRECTORY ${CMAKE_BINARY_DIR}

@@ -4,34 +4,43 @@
 #include <vector>
 #include <random>
 #include <sstream>
+#include <any>
 
 #include <foo.h>
 
-using argument = std::variant<int, double, std::string>;
-std::vector<std::vector<argument>> all_function_calls;
-std::vector<std::vector<argument>> n_random_function_calls;
+#include <bm/any_argument_adapter.h>
+
+using arg_type = std::variant<int, double, std::string>;
+
+std::vector<std::vector<arg_type>> all_function_calls;
+
+static std::unordered_map<std::string, std::function<arg_type(std::vector<arg_type>)>> adapted_functions = {
+    {"foo", adaptfunc(foo)},
+    {"bar", adaptfunc(bar)}
+};
+
+static std::unordered_map<std::string, std::vector<std::vector<arg_type>>> function_arguments = {
+};
 
 constexpr size_t n_calls = 30;
+std::string function_name;
 
-static void BM_foo(benchmark::State& state)
+static void BM_fn(benchmark::State& state)
 {
-    std::vector<argument>& data = n_random_function_calls[state.range(0)];
-
-    // test
-    int a = std::get<int>(data[0]);
-    double b = std::get<double>(data[1]);
-    int c = std::get<int>(data[2]);
-
+    std::function<arg_type(std::vector<arg_type>)> fn = adapted_functions[function_name];
+    std::vector<arg_type>& args = function_arguments[function_name][state.range(0)];
+    
     for (auto _ : state)
     {
-        auto result = foo(a, b, c);
-        benchmark::DoNotOptimize(result);
+        benchmark::DoNotOptimize(fn(args));
+        benchmark::ClobberMemory();
     }
 }
 
 int main(int arc, char** argv)
 {
-    std::string function_name = argv[1];
+    function_name = argv[1];
+    
     std::string file_name = function_name + ".txt";
     std::ifstream file(file_name);
     if (!file) {
@@ -50,7 +59,7 @@ int main(int arc, char** argv)
             args.emplace_back(type, value);
         }
 
-        std::vector<argument> function_call;
+        std::vector<arg_type> function_call;
         for (auto& [type, value] : args) {
             if (type == "string")
                 function_call.emplace_back(value);
@@ -65,17 +74,15 @@ int main(int arc, char** argv)
     }
 
     // generate n random function calls
-    n_random_function_calls.reserve(n_calls);
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_int_distribution<> dis(0, all_function_calls.size() - 1);
     for (size_t i = 0; i < n_calls; ++i) {
-        n_random_function_calls.emplace_back(all_function_calls[dis(gen)]);
+        function_arguments[function_name].emplace_back(all_function_calls[dis(gen)]);
     }
 
-    // working only for BM_foo right now
     for (size_t i = 0ULL; i < n_calls; ++i) {
-        benchmark::RegisterBenchmark(fmt::format("BM_{}", function_name).c_str(), BM_foo)->Args(
+        benchmark::RegisterBenchmark(fmt::format("BM_{}", function_name).c_str(), BM_fn)->Args(
             {static_cast<long>(i)}
         );
     }
