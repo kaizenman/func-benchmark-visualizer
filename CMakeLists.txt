@@ -43,6 +43,8 @@ set(SOURCE_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp
 )
 
+set(JSON_FILE ${CMAKE_BINARY_DIR}/results.json)
+
 include_directories(${benchmark_SOURCE_DIR}/include)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src)
 include_directories(${fmt_SOURCE_DIR}/include})
@@ -52,3 +54,12 @@ target_link_libraries(sample_app fmt)
 
 add_executable(func_bench ${CMAKE_CURRENT_SOURCE_DIR}/src/bm/func_bench.cpp)
 target_link_libraries(func_bench benchmark fmt)
+add_custom_target(run_func_bench 
+  COMMAND func_bench ${BM_LIST} --benchmark_format=json > ${JSON_FILE}
+  DEPENDS func_bench
+  WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+)
+
+add_custom_target(plot_func_bench
+  COMMAND "python3 ${CMAKE_CURRENT_SOURCE_DIR}/visualize.py ${JSON_FILE}"
+)
