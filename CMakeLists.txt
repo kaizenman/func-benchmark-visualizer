@@ -45,9 +45,10 @@ set(SOURCE_FILES
 
 include_directories(${benchmark_SOURCE_DIR}/include)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src)
+include_directories(${fmt_SOURCE_DIR}/include})
 
 add_executable(sample_app ${HEADER_FILES} ${SOURCE_FILES})
 target_link_libraries(sample_app fmt)
 
 add_executable(func_bench ${CMAKE_CURRENT_SOURCE_DIR}/src/bm/func_bench.cpp)
-target_link_libraries(func_bench benchmark)
+target_link_libraries(func_bench benchmark fmt)

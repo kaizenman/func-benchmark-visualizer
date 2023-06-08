@@ -64,7 +64,7 @@ std::string args_to_string(Args&&... arguments)
         (args_strings.emplace_back(convert_to_string(args)), ...);
     }, args);
 
-    return fmt::format("{}", fmt::join(args_strings, ", "));
+    return fmt::format("{}", fmt::join(args_strings, " "));
 }
 
 

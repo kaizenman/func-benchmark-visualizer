@@ -4,6 +4,13 @@
         "*.graphqls": "graphql",
         "stdexcept": "cpp",
         "iostream": "cpp",
-        "fstream": "cpp"
-    }
+        "fstream": "cpp",
+        "variant": "cpp",
+        "any": "cpp",
+        "vector": "cpp",
+        "iosfwd": "cpp",
+        "tuple": "cpp",
+        "functional": "cpp"
+    },
+    "C_Cpp.errorSquiggles": "disabled"
 }
